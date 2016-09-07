@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - geometry - cube</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				margin: 0px;
+				background-color: #000000;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="http://threejs.org/build/three.min.js"></script>
+
+		<script>
+    var scene, camera, renderer;
+    var geometry, material, mesh, light;
+    var length = 2;
+	 var width = 2;
+
+    //number of iterations of the terrain generation higher = more points
+    var layer = 8;
+    //number of smoothing iterations
+    var fuse = 8;
+    //scaling factor for display purposes -- should not be changed
+    var fact = 20;
+    //amount of randomness in generation algorithm
+    var noise = 20;
+    //used to retain original value of given point in smoothing algorithm -- set at one does nothing
+	 var retain = 1;
+    //breadth of smoothing algorithm for each point
+	 var breadth = 8;
+    //vertically compresses the terrain
+	 var compress  = 4;
+    init();
+    animate();
+
+    function init() {
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+
+				light = new THREE.PointLight( 0xffffff, 1.3, 100000 );
+				light.position.set( 0, 0, 0 );
+				scene.add( light );
+
+				//var cubegeom = new THREE.BoxGeometry( 200, 200, 200 );
+				//var mat = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+
+				//var cubemesh = new THREE.Mesh(cubegeom,mat);
+			//	scene.add(cubemesh);
+
+        var planargrid = [];
+				for(var a = 0;a<length;a++){
+					planargrid[a] = [];
+					for(var b = 0;b<length;b++){
+						planargrid[a][b] = Math.random()-.5;
+					}
+				}
+        for(var a = 0;a<layer;a++){
+          var tempgrid = [];
+          length*=2;
+          width*=2;
+          for(var b = 0;b < length;b++){
+						tempgrid[b] = [];
+            for(var c = 0;c < width;c++){
+								tempgrid[b][c] = (planargrid[Math.floor(b/2)][Math.floor(c/2)])+(Math.random()-.5)*noise*(layer-a+1);
+            }
+          }
+          planargrid = tempgrid;
+        }
+
+
+				for(var l = 0;l<fuse;l++){
+					var tempgrid = [];
+					for(var a = 0;a<length;a++){
+						tempgrid[a] = [];
+						for(var b = 0;b<width;b++){
+							var count = 0;
+							var height = 0;
+							for(var i = -breadth;i<=breadth;i++){
+								for(var j = -breadth;j<=breadth;j++){
+									if(a+i>=0 && a+i<length && b+j>=0 && b+j<width) {
+										count++;
+										if(i==0 && j==0)
+											height += planargrid[a+i][b+j]*retain;
+										else
+											height += planargrid[a+i][b+j];
+									}
+								}
+							}
+							tempgrid[a][b] = (height/(count+retain-1));
+						}
+					}
+					planargrid = tempgrid;
+				}
+        geometry = new THREE.Geometry();
+				var max = 0;
+        for(var a = 0;a<length;a++){
+          for(var b = 0;b<width;b++){
+						if(planargrid[a][b]*fact/compress>max)
+							max = planargrid[a][b]*fact/compress;
+            geometry.vertices.push(new THREE.Vector3(a*fact,planargrid[a][b]*fact/compress,b*fact));
+            }
+        }
+        for(var a =0;a<length*width-width-1;a++){
+          	if(a%width!=width-1){
+							var color  = geometry.vertices[a].y/max*1.2;
+							if(color>1)color=1;
+							var face1 = new THREE.Face3(a,a+1,a+width);
+							face1.color = new THREE.Color(color,1,color);
+							var face2 = new THREE.Face3(a+1,a+1+width,a+width);
+							face2.color= new THREE.Color(color,1,color);
+
+          	geometry.faces.push(face1);
+          	geometry.faces.push(face2);
+        	}
+        }
+				geometry.computeFaceNormals();
+        material = new THREE.MeshLambertMaterial( {color: 0xffffff, vertexColors: THREE.FaceColors, specular:  0xffffff, shininess: 10 } );
+				//material = new THREE.MeshNormalMaterial();
+
+        mesh = new THREE.Mesh( geometry, material );
+        mesh.rotation.y = Math.PI
+				mesh.position.z = -1000;
+
+        scene.add(mesh);
+				var water = new THREE.Mesh(new THREE.PlaneGeometry(length*fact,width*fact), new THREE.MeshBasicMaterial( {color: 0x2599fa} ));
+				water.rotation.x = -Math.PI/2;
+				water.position.z = -1000-width*fact/2;
+				water.position.x = -length*fact/2;
+				water.position.y = -50;
+				scene.add(water);
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        document.body.appendChild( renderer.domElement );
+
+    }
+    var keyw = false;
+    var keys = false;
+    var keyd = false;
+    var keya = false;
+    var keyspace = false;
+    var keyctrl = false;
+		var keyc = false;
+		var keyleft = false;
+		var keyright = false;
+    document.addEventListener('keydown', function(event) {
+    if(event.keyCode ==  65) {
+        keya = true;
+    }
+    if(event.keyCode == 68) {
+        keyd = true;
+    }
+    if(event.keyCode ==  83) {
+        keys = true;
+    }
+    if(event.keyCode == 87) {
+        keyw = true;
+    }
+    if(event.keyCode == 32){
+      keyspace = true;
+    }
+		if(event.keyCode == 67){
+      keyc = true;
+    }
+		if(event.keyCode == 37){
+			keyleft = true;
+		}
+		if(event.keyCode == 39){
+			keyright = true;
+		}
+
+    });
+
+    document.addEventListener('keyup', function(event) {
+    if(event.keyCode == 65) {
+        keya = false;
+    }
+    if(event.keyCode == 68) {
+        keyd = false;
+    }
+    if(event.keyCode == 83) {
+        keys = false;
+    }
+    if(event.keyCode == 87) {
+        keyw = false;
+    }
+    if(event.keyCode == 32){
+      keyspace = false;
+    }
+		if(event.keyCode == 67){
+      keyc = false;
+    }
+		if(event.keyCode == 37){
+			keyleft = false;
+		}
+		if(event.keyCode == 39){
+			keyright = false;
+		}
+
+    });
+
+    function animate() {
+				light.position.set(camera.position.x,camera.position.y,camera.position.z);
+        requestAnimationFrame( animate );
+        if(keya){
+					camera.position.z += 20*Math.sin(camera.rotation.y);
+					camera.position.x -= 20*Math.cos(camera.rotation.y);
+        }
+        if(keyd){
+					camera.position.z -= 20*Math.sin(camera.rotation.y);
+					camera.position.x += 20*Math.cos(camera.rotation.y);
+				}
+        if(keyw){
+        	camera.position.z -= 20*Math.cos(camera.rotation.y);
+					camera.position.x -= 20*Math.sin(camera.rotation.y);
+        }
+        if(keys){
+					camera.position.z += 20*Math.cos(camera.rotation.y);
+					camera.position.x += 20*Math.sin(camera.rotation.y);
+				}
+        if(keyspace){
+        	camera.position.y += 10;
+				}
+				if(keyc){
+					camera.position.y -= 10;
+				}
+				if(keyleft){
+					camera.rotation.y += .01;
+				}
+				if(keyright){
+					camera.rotation.y -= .01;
+				}
+
+        renderer.render( scene, camera );
+
+    }
+		</script>
+
+	</body>
+</html>
