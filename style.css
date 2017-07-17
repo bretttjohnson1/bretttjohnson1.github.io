@@ -3,15 +3,29 @@ p {
    font-size: 1.5em;
 }
 hr {
-   width: 100%; color: black; height: 1px; background-color:black;
+   width: 100%;
+   border: 1px;
+   border-style: solid;;
+   color: black;
+   height: 0;
+
+   background-color: black;
+}
+hr.red {
+   color: #880000;
+   background-color: #880000;
+   border-color: #880000;
 }
 p.tab1 {
-   margin-left:2em;
+   margin-left: 2em;
 }
 p.tab2 {
-   margin-left:4em;
+   margin-left: 4em;
 }
 p.red-big {
-   color:#880000;
-   font-size:2em;
+   color: #880000;
+   font-size: 2em;
+}
+div.middle_div {
+   max-width: 80em;
 }
