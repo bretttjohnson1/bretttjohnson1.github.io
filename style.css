@@ -5,10 +5,10 @@ p {
 hr {
    width: 100%;
    border: 1px;
-   border-style: solid;;
+   border-style: solid;
    color: black;
    height: 0;
-
+   border-color: black;
    background-color: black;
 }
 hr.red {
@@ -28,4 +28,11 @@ p.red-big {
 }
 div.middle_div {
    max-width: 80em;
+}
+div.border_div {
+    border-width: 2px;
+    border-color: #880000;
+    border-style: solid none none none;
+    width: 100%;
+    margin-bottom:1em;
 }
