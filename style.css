@@ -30,7 +30,7 @@ div.middle_div {
    max-width: 80em;
 }
 div.border_div {
-    border-width: 2px;
+    border-width: 1px;
     border-color: #880000;
     border-style: solid none none none;
     width: 100%;
