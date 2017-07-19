@@ -29,6 +29,9 @@ p.red-big {
 div.middle_div {
    max-width: 80em;
 }
+div.block.div {
+    
+}
 div.border_div {
     border-width: 1px;
     border-color: #880000;
