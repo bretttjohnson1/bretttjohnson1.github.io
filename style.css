@@ -19,12 +19,8 @@ hr.red {
   background-color: #880000;
   border-color: #880000;
 }
-div.tab1 {
+div.tab {
   margin-left: 2em;
-}
-div.tab2 {
-  font-size: 16pt;
-  margin-left: 4em;
 }
 div.inline {
   display:inline-block;
